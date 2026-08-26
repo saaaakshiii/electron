@@ -1,5 +1,8 @@
-import { ipcMain, WebContents } from "electron";
+import { ipcMain, WebContents, WebFrameMain } from "electron";
+import { pathToFileURL } from "url";
+import { getUIPath } from "./pathResolver.js";
 
+// to check if we're currently in development env
 export function isDev() : boolean{
     return process.env.NODE_ENV == 'development';
 }
@@ -8,7 +11,11 @@ export function isDev() : boolean{
 // Key datatype here extends just the keys defined in EventPayloadMapping
 // data type will be the return type of handler() which is the value of Key
 export function ipcMainHandle<Key extends keyof EventPayloadMapping>(key: Key, handler: ()=> EventPayloadMapping[Key]){
-    ipcMain.handle(key, ()=>handler()); // args- event, promise
+    ipcMain.handle(key, (event)=>{
+        // @ts-ignore
+        validateEventFrame(event.senderFrame);
+        return handler()
+    }); // args- event, promise
 }
 
 // ********************************
@@ -27,4 +34,19 @@ export function ipcWebContentsSend<Key extends keyof EventPayloadMapping>(
     payload: EventPayloadMapping[Key]
 ){
     webContents.send(key, payload);  
+}
+
+// To validate the Event frame (dev or prod)
+export function validateEventFrame(frame: WebFrameMain){
+    console.log(frame.url);
+    // if currently in dev mode
+    if(isDev() && new URL(frame.url).host === 'localhost:5123'){
+        return;
+    }
+    // if currently in prod build and if the request came from somewhere, which is not my UI file,
+    // (index.html), so throw an error (malicious event). this will not work if we have multiple files in
+    // our app or if the path is being rendered
+    if(frame.url !== pathToFileURL(getUIPath()).toString()){
+        throw new Error('Malicious event');
+    }
 }

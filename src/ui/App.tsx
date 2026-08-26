@@ -8,6 +8,8 @@ function App() {
   const [count, setCount] = useState(0)
 
   // Will run only on the first render and not on every render
+  // when this component stops, i.e., it rerenders, we want to unsubcribe from
+  // the subscribeStatistics. for that we need to send some kind of a function
   useEffect(() => {
     // const loadData = async()=>{
     //   // @ts-ignore
@@ -16,9 +18,10 @@ function App() {
     // };
     // loadData();
 
-    window.electron.subscribeStatistics((stats) => {
+    const unsub = window.electron.subscribeStatistics((stats) => {
       console.log(stats);
     });
+    return unsub;
   }, []);
 
   return (

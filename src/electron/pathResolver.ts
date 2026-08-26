@@ -8,3 +8,8 @@ export function getPreloadPath(){
         isDev()?'.':'..', '/dist-electron/preload.cjs'
     )
 }
+
+// Generalizing the UI path
+export function getUIPath(){
+    return path.join(app.getAppPath(), '/dist-react/index.html')
+}
