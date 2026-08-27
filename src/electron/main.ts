@@ -1,8 +1,8 @@
-import {app, BrowserWindow, ipcMain} from "electron";
+import {app, BrowserWindow, ipcMain, Tray} from "electron";
 import path from "path";
 import { isDev } from "./util.js";
 import { getStaticData, pollResources } from "./resourceManager.js";
-import { getPreloadPath, getUIPath } from "./pathResolver.js";
+import { getAssetPath, getPreloadPath, getUIPath } from "./pathResolver.js";
 import {ipcMainHandle} from './util.js';
 // type test = string;
 
@@ -28,5 +28,11 @@ app.on("ready", ()=>{
     ipcMainHandle("getStaticData", ()=>{
         return getStaticData(); // returns total storage, cpu usage and total memory in GB
     });
+
+    new Tray(path.join(getAssetPath(), process.platform==="darwin"? 'trayIconTemplate.png' : 'trayIcon.png'))
+
+    mainWindow.on("close", (e)=>{
+        e.preventDefault();
+    })
 });
 

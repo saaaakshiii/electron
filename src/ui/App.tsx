@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+import { useStatistics } from './useStatistics'
+import { Chart } from './Chart'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -10,22 +12,16 @@ function App() {
   // Will run only on the first render and not on every render
   // when this component stops, i.e., it rerenders, we want to unsubcribe from
   // the subscribeStatistics. for that we need to send some kind of a function
-  useEffect(() => {
-    // const loadData = async()=>{
-    //   // @ts-ignore
-    //   const data = await window.electron.getStaticData();
-    //   console.log(data);
-    // };
-    // loadData();
-
-    const unsub = window.electron.subscribeStatistics((stats) => {
-      console.log(stats);
-    });
-    return unsub;
-  }, []);
-
+  
+  const statistics = useStatistics(10);
+  const cpuUsages = useMemo(()=>statistics.map(stat=>stat.cpuUsage),
+    [statistics] // we want to refresh whenever the statistics change 
+  );
   return (
     <>
+      <div style={{height: 120}}>
+        <Chart data={cpuUsages} maxDataPoints={10}/>
+      </div>
       <section id="center">
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
