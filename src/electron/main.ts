@@ -1,10 +1,13 @@
-import {app, BrowserWindow, ipcMain, Tray} from "electron";
-import path from "path";
+import {app, BrowserWindow, Menu} from "electron";
 import { isDev } from "./util.js";
 import { getStaticData, pollResources } from "./resourceManager.js";
-import { getAssetPath, getPreloadPath, getUIPath } from "./pathResolver.js";
+import { getPreloadPath, getUIPath } from "./pathResolver.js";
 import {ipcMainHandle} from './util.js';
+import { createTray } from "./tray.js";
+import { createMenu } from "./menu.js";
 // type test = string;
+
+Menu.setApplicationMenu(null);
 
 // When the app is ready, run the function
 app.on("ready", ()=>{
@@ -29,10 +32,40 @@ app.on("ready", ()=>{
         return getStaticData(); // returns total storage, cpu usage and total memory in GB
     });
 
-    new Tray(path.join(getAssetPath(), process.platform==="darwin"? 'trayIconTemplate.png' : 'trayIcon.png'))
-
-    mainWindow.on("close", (e)=>{
-        e.preventDefault();
-    })
+    createTray(mainWindow);
+    handleCloseEvents(mainWindow);
+    createMenu(mainWindow); 
 });
+
+
+function handleCloseEvents(mainWindow: BrowserWindow){
+    // to persist what events happened at what point in time, we need some sort of a variable
+    let willClose = false;// we don't want the app to close by default
+
+    mainWindow.on('close', (e)=>{
+        if(willClose){
+            return;
+        }
+
+        e.preventDefault();
+        mainWindow.hide(); // enough for windows and linux
+
+        // for mac os
+        // A Dock | undefined property (Dock on macOS, undefined on all other platforms) 
+        // that allows you to perform actions on your app icon in the user's dock. 
+        if(app.dock){
+            app.dock.hide();
+        }
+    });
+
+    // "before-quit" runs before the app quits
+    app.on("before-quit", ()=>{
+        willClose=true;
+    });  
+
+    // when we want the window to show again
+    mainWindow.on("show", ()=>{
+        willClose=false;
+    })
+}
 
