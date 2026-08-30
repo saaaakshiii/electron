@@ -22,13 +22,15 @@ export function createMenu(mainWindow: BrowserWindow){
             submenu:[
                 {
                     label: 'CPU',
-                    click : ()=>ipcWebContentsSend("changeView")
+                    click : ()=>ipcWebContentsSend("changeView", mainWindow.webContents, "CPU")
                 },
                 {
                     label: 'RAM',
+                    click : ()=>ipcWebContentsSend("changeView", mainWindow.webContents, "RAM")
                 },
                 {
                     label: 'STORAGE',
+                    click : ()=>ipcWebContentsSend("changeView", mainWindow.webContents, "STORAGE")
                 },
             ],
 

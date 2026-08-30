@@ -1,6 +1,7 @@
 import { ipcMain, WebContents, WebFrameMain } from "electron";
 import { pathToFileURL } from "url";
 import { getUIPath } from "./pathResolver.js";
+import { error } from "console";
 
 // to check if we're currently in development env
 export function isDev() : boolean{
@@ -49,4 +50,17 @@ export function validateEventFrame(frame: WebFrameMain){
     if(frame.url !== pathToFileURL(getUIPath()).toString()){
         throw new Error('Malicious event');
     }
+}
+
+export function ipcMainOn<Key extends keyof EventPayloadMapping>(
+    key : Key,
+    handler : (payload: EventPayloadMapping[Key])=>void
+){
+    ipcMain.on(key, (event, payload)=>{
+        if(!event.senderFrame){
+            throw new Error("Frame is unavailable");
+        }
+        validateEventFrame(event.senderFrame);
+        return handler(payload);
+    });
 }

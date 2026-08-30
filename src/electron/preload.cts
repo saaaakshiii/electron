@@ -10,10 +10,15 @@ electron.contextBridge.exposeInMainWorld("electron", {
         ipcOn('statistics', (stats)=>{
             callback(stats);
         }),
+    subscribeChangeView : (callback)=>
+        ipcOn('changeView', (stats)=>{
+            callback(stats);
+        }), // recieving events
     // invoke expects a response back from the destination
     // invoke will just return the value that the IPC main process returned as a promise 
     // so just defining what event we actually want to listen for is just plenty
     getStaticData : () => ipcInvoke('getStaticData'),
+    sendFrameAction: (payload)=>ipcSend("sendFrameAction", payload),
 } satisfies Window['electron'])
 
 // Will take the event of generic key EventPayloadMapping
@@ -39,4 +44,12 @@ function ipcOn<Key extends keyof EventPayloadMapping>(
     // We donot want to immediately unsubscribe, so we need to convert the off to a function
     // so we can call when we want to unsubscribe
     return ()=>electron.ipcRenderer.off(key, cb)// unsubscribing from the prev fucntion
+}
+
+// typesafe send wrapper (from frontend to backend)
+function ipcSend<Key extends keyof EventPayloadMapping> (
+    key: Key,
+    payload: EventPayloadMapping[Key]
+){
+    electron.ipcRenderer.send(key, payload);
 }

@@ -13,13 +13,16 @@ type StaticData ={
 };
 
 type View = 'CPU' | 'RAM' | 'STORAGE';
+
+type FrameWindowAction = 'CLOSE' | 'MAXIMIZE' | 'MINIMIZE';
 // Adapter mapping-
 // events- statistics, getStaticData; types- Statistics, StaticData
 type EventPayloadMapping = {
     statistics : Statistics;
     getStaticData : StaticData;
     changeView : View;
-}=>
+    sendFrameAction : FrameWindowAction;
+}
 
 // just a side effect function, no I/P, no O/P
 type UnsubscribeFunction=()=>void;
@@ -34,6 +37,7 @@ interface Window{
         subscribeChangeView:(
             callback: (statistics: View) =>void
         )=>UnsubscribeFunction;
+        sendFrameAction: (payload: FrameWindowAction)=>void 
     };
     
 }

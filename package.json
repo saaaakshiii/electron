@@ -14,7 +14,8 @@
     "transpile:electron": "tsc --project src/electron/tsconfig.json",
     "dist:mac": "npm run transpile:electron && npm run build && electron-builder --mac --arm64",
     "dist:win": "npm run transpile:electron && npm run build && electron-builder --win --x64",
-    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --linux --x64 && APPIMAGE_EXTRACT_AND_RUN=1 ./dist/electron-demo-0.0.0.AppImage"
+    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --linux --x64 && APPIMAGE_EXTRACT_AND_RUN=1 ./dist/electron-demo-0.0.0.AppImage",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "os-utils": "^0.0.14",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
     "@types/node": "^24.13.3",
     "@types/os-utils": "^0.0.4",
     "@types/react": "^19.2.17",

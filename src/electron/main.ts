@@ -1,5 +1,5 @@
 import {app, BrowserWindow, Menu} from "electron";
-import { isDev } from "./util.js";
+import { ipcMainOn, isDev } from "./util.js";
 import { getStaticData, pollResources } from "./resourceManager.js";
 import { getPreloadPath, getUIPath } from "./pathResolver.js";
 import {ipcMainHandle} from './util.js';
@@ -16,8 +16,10 @@ app.on("ready", ()=>{
             preload : getPreloadPath(), // telling the main.ts to run this script before the main script
             // and attach everything we want in the context bridge to our window under a keyword 'electron'
             // and just allow us to use specific things
-        }
+        },
+        frame : false,
     });
+
     if(isDev()){
         mainWindow.loadURL('http://localhost:5123');
     }else{
@@ -31,6 +33,20 @@ app.on("ready", ()=>{
     ipcMainHandle("getStaticData", ()=>{
         return getStaticData(); // returns total storage, cpu usage and total memory in GB
     });
+
+    ipcMainOn("sendFrameAction", (payload)=>{
+        switch(payload){
+            case "CLOSE":
+                mainWindow.close();
+                break;
+            case "MINIMIZE":
+                mainWindow.minimize();
+                break;
+            case "MAXIMIZE":
+                mainWindow.maximize();
+                break;
+        }
+    })
 
     createTray(mainWindow);
     handleCloseEvents(mainWindow);
