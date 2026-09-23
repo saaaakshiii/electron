@@ -10,10 +10,11 @@ export function createTray(mainWindow: BrowserWindow){
 
     // menu that pops up when you click on the tray
     // []-> an array of options that we want to be clickable
-    tray.setContextMenu(Menu.buildFromTemplate([
+    tray.setContextMenu
+        (Menu.buildFromTemplate([
             {
                 label: 'Show',
-                click: ()=>{
+                click: ()=>{    
                     mainWindow.show()
                     // MacOS
                     if(app.dock){

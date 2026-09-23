@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "./assets/vite.svg";
-import heroImg from "./assets/hero.png";
 import "./App.css";
 import { useStatistics } from "./useStatistics";
 import { Chart } from "./Chart";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const staticData = useStaticData();
+  // const [count, setCount] = useState(0);
   const [activeView, setActiveView] = useState<View>("CPU");
   // Will run only on the first render and not on every render
   // when this component stops, i.e., it rerenders, we want to unsubcribe from
@@ -43,134 +41,93 @@ function App() {
   }, []);
 
   return (
-    <>
-      <header>
-        <button
-          id="close"
-          onClick={() => window.electron.sendFrameAction("CLOSE")}
-        />
-        <button 
-          id="minimize" 
-          onClick={()=>window.electron.sendFrameAction('MINIMIZE')}
-        />
-        <button 
-          id="maximize" 
-          onClick={()=>window.electron.sendFrameAction('MAXIMIZE')}
-        />
-      </header>
-      <>
-        <div style={{ height: 120 }}>
-          <Chart data={activeUsages} maxDataPoints={10} />
+    <div className="App">
+      <Header />
+      <div className="main">
+        <div>
+          <SelectOption 
+            onClick={()=>setActiveView('CPU')}
+            title = "CPU"
+            view = "CPU"
+            subTitle={staticData?.cpuModel ?? ''} 
+            data={cpuUsages}
+          />
+          <SelectOption
+            onClick={()=>setActiveView('RAM')}
+            title="RAM" 
+            view="RAM"
+            subTitle={(staticData?.totalMemoryGB.toString() ?? '')+' GB'} 
+            data={ramUsages}
+          />
+          <SelectOption
+            onClick={()=>setActiveView('STORAGE')}
+            title="STORAGE" 
+            view="STORAGE"
+            subTitle={staticData?.totalStorage.toString() ?? ''+' GB'} 
+            data={storageUsages}
+          />
         </div>
-        <section id="center">
-          <div className="hero">
-            <img
-              src={heroImg}
-              className="base"
-              width="170"
-              height="179"
-              alt=""
-            />
-            <img src={reactLogo} className="framework" alt="React logo" />
-            <img src={viteLogo} className="vite" alt="Vite logo" />
-          </div>
-          <div>
-            <h1>Get started</h1>
-            <p>
-              Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-            </p>
-          </div>
-          <button
-            type="button"
-            className="counter"
-            onClick={() => setCount((count) => count + 1)}
-          >
-            Count is {count}
-          </button>
-        </section>
-
-        <div className="ticks"></div>
-
-        <section id="next-steps">
-          <div id="docs">
-            <svg className="icon" role="presentation" aria-hidden="true">
-              <use href="/icons.svg#documentation-icon"></use>
-            </svg>
-            <h2>Documentation</h2>
-            <p>Your questions, answered</p>
-            <ul>
-              <li>
-                <a href="https://react.dev/" target="_blank">
-                  <img className="button-icon" src={reactLogo} alt="" />
-                  Learn more
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div id="social">
-            <svg className="icon" role="presentation" aria-hidden="true">
-              <use href="/icons.svg#social-icon"></use>
-            </svg>
-            <h2>Connect with us</h2>
-            <p>Join the Vite community</p>
-            <ul>
-              <li>
-                <a href="https://github.com/vitejs/vite" target="_blank">
-                  <svg
-                    className="button-icon"
-                    role="presentation"
-                    aria-hidden="true"
-                  >
-                    <use href="/icons.svg#github-icon"></use>
-                  </svg>
-                  GitHub
-                </a>
-              </li>
-              <li>
-                <a href="https://chat.vite.dev/" target="_blank">
-                  <svg
-                    className="button-icon"
-                    role="presentation"
-                    aria-hidden="true"
-                  >
-                    <use href="/icons.svg#discord-icon"></use>
-                  </svg>
-                  Discord
-                </a>
-              </li>
-              <li>
-                <a href="https://x.com/vite_js" target="_blank">
-                  <svg
-                    className="button-icon"
-                    role="presentation"
-                    aria-hidden="true"
-                  >
-                    <use href="/icons.svg#x-icon"></use>
-                  </svg>
-                  X.com
-                </a>
-              </li>
-              <li>
-                <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                  <svg
-                    className="button-icon"
-                    role="presentation"
-                    aria-hidden="true"
-                  >
-                    <use href="/icons.svg#bluesky-icon"></use>
-                  </svg>
-                  Bluesky
-                </a>
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        <div className="ticks"></div>
-        <section id="spacer"></section>
-      </>
-    </>
+        <div className="mainGrid">
+          <Chart selectedView={activeView}data={activeUsages} maxDataPoints={10} />
+        </div>
+      </div>
+    </div>
   );
+}
+
+function SelectOption(props: {
+    title: string;
+    view: View;
+    subTitle : string;
+    data: number[];
+    onClick: ()=>void;
+}){
+  return (
+    <button className="selectOption" onClick={props.onClick}>
+      <div className="selectOptionTitle">
+        <div>{props.title}</div>
+        <div>{props.subTitle}</div>
+      </div>
+      <div className="selectOptionChart">
+        <Chart 
+        selectedView={props.view}
+        data={props.data} 
+        maxDataPoints={10}
+        ></Chart>
+      </div>
+    </button>
+  );
+}
+
+function Header() {
+  return (
+    <header>
+      <button
+        id="close"
+        onClick={() => window.electron.sendFrameAction("CLOSE")}
+      />
+      <button
+        id="minimize"
+        onClick={() => window.electron.sendFrameAction("MINIMIZE")}
+      />
+      <button
+        id="maximize"
+        onClick={() => window.electron.sendFrameAction("MAXIMIZE")}
+      />
+    </header>
+  );
+}
+
+function useStaticData(){
+  const [staticData, setStaticData] = useState<StaticData | null> (null);
+  
+  useEffect(()=>{
+    (async ()=>{
+      setStaticData(await window.electron.getStaticData());
+    })();
+  }, []);
+
+  return staticData
 }
 
 export default App;
